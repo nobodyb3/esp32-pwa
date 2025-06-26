@@ -1,61 +1,163 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+:root {
+    --primary: #5e8df5;
+    --danger: #ff4d4f;
+    --success: #52c41a;
+    --text: #2c3e50;
+    --bg: #f5f7fa;
+}
+
+* {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-}
-
-.container {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     padding: 20px;
+}
+
+.dashboard {
     width: 100%;
-    max-width: 350px;
-    text-align: center;
+    max-width: 400px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding: 25px;
 }
 
-.control-panel {
-    margin: 20px 0;
+/* Status Panel */
+.status-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
-button {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 15px 25px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s;
-    width: 100%;
+.speedometer {
+    font-size: 3rem;
+    font-weight: 700;
 }
 
-button:active {
-    transform: scale(0.95);
+.speedometer small {
+    font-size: 1rem;
+    opacity: 0.7;
 }
 
-#stop {
-    background-color: #f44336;
-    width: 80px;
+.battery {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.battery-level {
+    width: 50px;
+    height: 25px;
+    border: 2px solid var(--text);
+    border-radius: 4px;
+    padding: 2px;
+    position: relative;
+}
+
+.battery-level::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 6px;
+    width: 3px;
+    height: 10px;
+    background: var(--text);
+    border-radius: 0 2px 2px 0;
+}
+
+#battery-level {
+    height: 100%;
+    width: 70%;
+    background: var(--success);
+    border-radius: 2px;
+}
+
+/* Control Pad */
+.control-pad {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
 }
 
 .row {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
 }
 
-.sensor-data {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #555;
+.control-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(94, 141, 245, 0.3);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(94, 141, 245, 0.3);
+}
+
+.stop-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--danger);
+    color: white;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(255, 77, 79, 0.3);
+}
+
+.stop-btn:active {
+    transform: scale(0.95);
+}
+
+/* GPS Panel */
+.gps-panel {
+    margin-top: 30px;
+    padding: 15px;
+    background: #f0f2f5;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.gps-coords {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.connection-status {
+    font-size: 0.9rem;
+    color: var(--danger);
+}
+
+.connection-status.connected {
+    color: var(--success);
 }
