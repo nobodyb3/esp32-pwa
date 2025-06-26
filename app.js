@@ -1,113 +1,93 @@
-// WebSocket connection
-const socket = new WebSocket('ws://http://192.168.0.102/'); // Replace with ESP32 IP
+let socket;
+let gpsWatchId;
 
 // UI Elements
-const forwardBtn = document.getElementById('forward');
-const backwardBtn = document.getElementById('backward');
-const leftBtn = document.getElementById('left');
-const rightBtn = document.getElementById('right');
-const stopBtn = document.getElementById('stop');
-const gpsData = document.getElementById('gps-data');
 const connectionStatus = document.getElementById('connection-status');
+const gpsData = document.getElementById('gps-data');
 const speedDisplay = document.getElementById('speed');
-const batteryLevel = document.getElementById('battery-level');
-const batteryPercent = document.getElementById('battery-percent');
 
-// Connection status
-socket.onopen = () => {
-    connectionStatus.textContent = '● Connected';
-    connectionStatus.classList.add('connected');
-    startSensorUpdates();
-};
+function connectWebSocket() {
+    const espIP = '192.168.0.102'; // Your ESP32's IP
+    socket = new WebSocket(`ws://${espIP}:81`);
 
-socket.onerror = (error) => {
-    connectionStatus.textContent = '● Connection Error';
-    connectionStatus.classList.remove('connected');
-};
+    socket.onopen = () => {
+        connectionStatus.textContent = '● Connected';
+        connectionStatus.className = 'connected';
+        startGPS();
+    };
 
-socket.onclose = () => {
-    connectionStatus.textContent = '● Disconnected';
-    connectionStatus.classList.remove('connected');
-};
+    socket.onerror = (error) => {
+        connectionStatus.textContent = '● Error';
+        connectionStatus.className = 'error';
+        console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+        connectionStatus.textContent = '● Disconnected';
+        connectionStatus.className = 'disconnected';
+        setTimeout(connectWebSocket, 2000);
+    };
+
+    socket.onmessage = (event) => {
+        console.log('Received:', event.data);
+    };
+}
+
+function startGPS() {
+    if (!navigator.geolocation) {
+        gpsData.textContent = 'GPS not supported';
+        return;
+    }
+
+    gpsWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const data = {
+                type: 'gps',
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                speed: position.coords.speed || 0,
+                accuracy: position.coords.accuracy
+            };
+            
+            gpsData.textContent = `${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
+            speedDisplay.textContent = (data.speed * 3.6).toFixed(1); // m/s → km/h
+            
+            if (socket?.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(data));
+            }
+        },
+        (error) => {
+            gpsData.textContent = `GPS Error: ${error.message}`;
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 5000
+        }
+    );
+}
 
 // Button controls
-forwardBtn.addEventListener('touchstart', () => sendCommand('F'), {passive: true});
-forwardBtn.addEventListener('touchend', () => sendCommand('S'), {passive: true});
-backwardBtn.addEventListener('touchstart', () => sendCommand('B'), {passive: true});
-backwardBtn.addEventListener('touchend', () => sendCommand('S'), {passive: true});
-leftBtn.addEventListener('touchstart', () => sendCommand('L'), {passive: true});
-leftBtn.addEventListener('touchend', () => sendCommand('S'), {passive: true});
-rightBtn.addEventListener('touchstart', () => sendCommand('R'), {passive: true});
-rightBtn.addEventListener('touchend', () => sendCommand('S'), {passive: true});
-stopBtn.addEventListener('click', () => sendCommand('S'));
+document.getElementById('forward').addEventListener('mousedown', () => sendCommand('F'));
+document.getElementById('forward').addEventListener('mouseup', () => sendCommand('S'));
+document.getElementById('backward').addEventListener('mousedown', () => sendCommand('B'));
+document.getElementById('backward').addEventListener('mouseup', () => sendCommand('S'));
+document.getElementById('left').addEventListener('mousedown', () => sendCommand('L'));
+document.getElementById('left').addEventListener('mouseup', () => sendCommand('S'));
+document.getElementById('right').addEventListener('mousedown', () => sendCommand('R'));
+document.getElementById('right').addEventListener('mouseup', () => sendCommand('S'));
+document.getElementById('stop').addEventListener('click', () => sendCommand('S'));
 
-// For desktop
-forwardBtn.addEventListener('mousedown', () => sendCommand('F'));
-forwardBtn.addEventListener('mouseup', () => sendCommand('S'));
-backwardBtn.addEventListener('mousedown', () => sendCommand('B'));
-backwardBtn.addEventListener('mouseup', () => sendCommand('S'));
-leftBtn.addEventListener('mousedown', () => sendCommand('L'));
-leftBtn.addEventListener('mouseup', () => sendCommand('S'));
-rightBtn.addEventListener('mousedown', () => sendCommand('R'));
-rightBtn.addEventListener('mouseup', () => sendCommand('S'));
-
-// Phone sensor data
-function startSensorUpdates() {
-    if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(
-            (position) => {
-                const data = {
-                    type: "gps",
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    speed: position.coords.speed || 0,
-                    heading: position.coords.heading || 0
-                };
-                if (socket.readyState === WebSocket.OPEN) {
-                    socket.send(JSON.stringify(data));
-                }
-                gpsData.textContent = `${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
-                speedDisplay.textContent = (data.speed * 3.6).toFixed(1); // m/s to km/h
-            },
-            (error) => {
-                gpsData.textContent = "GPS Error";
-                console.error(error);
-            },
-            { enableHighAccuracy: true }
-        );
-    } else {
-        gpsData.textContent = "GPS Not Supported";
-    }
-}
-
-// Battery status
-if ("getBattery" in navigator) {
-    navigator.getBattery().then(battery => {
-        updateBattery(battery.level * 100);
-        battery.addEventListener('levelchange', () => {
-            updateBattery(battery.level * 100);
-        });
-    });
-} else {
-    batteryPercent.textContent = "N/A";
-}
-
-function updateBattery(percent) {
-    const level = Math.round(percent);
-    batteryLevel.style.width = `${level}%`;
-    batteryPercent.textContent = `${level}%`;
-    
-    if (level < 20) {
-        batteryLevel.style.background = 'var(--danger)';
-    } else if (level < 50) {
-        batteryLevel.style.background = 'orange';
-    } else {
-        batteryLevel.style.background = 'var(--success)';
-    }
-}
+// Touch support for mobile
+document.getElementById('forward').addEventListener('touchstart', (e) => { e.preventDefault(); sendCommand('F'); }, {passive: false});
+document.getElementById('forward').addEventListener('touchend', (e) => { e.preventDefault(); sendCommand('S'); }, {passive: false});
+// (Repeat for other buttons...)
 
 function sendCommand(cmd) {
-    if (socket.readyState === WebSocket.OPEN) {
+    if (socket?.readyState === WebSocket.OPEN) {
         socket.send(cmd);
     }
 }
+
+// Initialize
+window.addEventListener('load', connectWebSocket);
