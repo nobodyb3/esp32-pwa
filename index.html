@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ESP32 Car Control</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Car Control</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div class="container">
-    <h1>ESP32 Car Control</h1>
-    <div class="control-panel">
-      <button id="forward">↑ Forward</button>
-      <button id="left">← Left</button>
-      <button id="stop">Stop</button>
-      <button id="right">→ Right</button>
-      <button id="backward">↓ Backward</button>
+    <div class="container">
+        <h1>ESP32 Car Control</h1>
+        <div class="control-panel">
+            <button id="forward">↑ Forward</button>
+            <div class="row">
+                <button id="left">← Left</button>
+                <button id="stop">STOP</button>
+                <button id="right">→ Right</button>
+            </div>
+            <button id="backward">↓ Backward</button>
+        </div>
+        <div class="sensor-data">
+            <p>GPS: <span id="gps-data">Waiting...</span></p>
+            <p>Battery: <span id="battery">--%</span></p>
+        </div>
     </div>
-    <div id="status">Disconnected</div>
-  </div>
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
